@@ -1,9 +1,12 @@
 #include <iostream>
 #include <string>
 #include "kv_store.hpp"
+#include "wal.hpp"
 
 int main(){
+    WAL wal;
     KVStore store;
+    wal.open("wal.log");
     std::string line;
     // store.set("name", "thomas");
     while (true){
@@ -32,6 +35,7 @@ int main(){
             } else{
                 std::string key = rest.substr(0,kv_space);
                 std::string value = rest.substr(kv_space +1);
+                wal.append_set(key,value);
                 store.set(key,value);
                 std::cout << "OK" <<std::endl;
             }
@@ -45,6 +49,7 @@ int main(){
             }
         }
         if (command == "DEL"){
+            wal.append_del(rest);
             bool result = store.del(rest);
             if(result){
                 std::cout <<"Entry deleted" << std::endl;
@@ -53,4 +58,5 @@ int main(){
             }
         }
     }
+    wal.close();
 }
